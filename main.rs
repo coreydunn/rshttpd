@@ -22,11 +22,41 @@ fn main()
                 }
             }
 
-            print!("{}",req);
+            // Get URI
+            let mut uri:&str="";
+            if req.len() > 0
+            {
+                if &req[0..3]=="GET"
+                {
+                    uri=std::iter::Iterator
+                        ::nth(&mut req.split(" "),1).unwrap();
+                }
+            }
 
-            let uri="<html><body>wow</body></html>";
-            let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri.len(),uri);
-            print!("SENDING RESPONSE!! {}\n",response);
+            // Validate URI
+            // Index
+            if uri=="/"
+            {
+                uri="index.html";
+            }
+
+            // Other page/URI
+            else
+            {
+                uri=std::iter::Iterator::nth(
+                    &mut
+                    std::iter::Iterator
+                    ::nth(&mut req.split("/"),1)
+                    .unwrap().split(" "),0).unwrap();
+            }
+
+            print!("GET: {:?}\n",uri);
+
+            let mut f=std::fs::File::open(uri).unwrap();
+            let mut uri_data="".to_string();
+            std::io::Read::read_to_string(&mut f,&mut uri_data).unwrap();
+
+            let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
             std::io::Write::write(c,
                   response
                   .as_bytes()).unwrap();
