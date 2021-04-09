@@ -52,14 +52,28 @@ fn main()
 
             print!("GET: {:?}\n",uri);
 
-            let mut f=std::fs::File::open(uri).unwrap();
             let mut uri_data="".to_string();
-            std::io::Read::read_to_string(&mut f,&mut uri_data).unwrap();
+            match std::fs::File::open(uri)
+            {
+                Ok(mut f) => {
+                    std::io::Read::read_to_string(&mut f,&mut uri_data).unwrap();
 
-            let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
-            std::io::Write::write(c,
-                  response
-                  .as_bytes()).unwrap();
+                    let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
+                    std::io::Write::write(c,
+                          response
+                          .as_bytes()).unwrap();
+                },
+
+                Err(_) => {
+                    uri_data="<html>404 Error: Not Found</html>".to_string();
+                    let response=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
+                    std::io::Write::write(c,
+                          response
+                          .as_bytes()).unwrap();
+                },
+
+            };
+
         };
 
     let mut threads:std::vec::Vec<std::thread::JoinHandle<()>>=vec!();
