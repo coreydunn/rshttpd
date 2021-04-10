@@ -99,12 +99,29 @@ fn handle_client(c:&mut std::net::TcpStream,addr:std::net::SocketAddr)
                                   .as_bytes()).unwrap();
         },
 
+        // Failed to load URI -- present 404 page
         Err(_) => {
-            uri_data="<html>404 Error: Not Found</html>".to_string();
-            let response=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
-            std::io::Write::write(c,
-                                  response
-                                  .as_bytes()).unwrap();
+            match std::fs::File::open("404.html")
+            {
+                // Display /404.html page
+                Ok(mut ff) => {
+                    std::io::Read::read_to_string(&mut ff,&mut uri_data).unwrap();
+
+                    let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
+                    std::io::Write::write(c,
+                                          response
+                                          .as_bytes()).unwrap();
+                },
+
+                // Otherwise display minimal built-in 404 message
+                Err(_) => {
+                    uri_data="<html>404 Error: Not Found</html>".to_string();
+                    let response=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
+                    std::io::Write::write(c,
+                                          response
+                                          .as_bytes()).unwrap();
+                },
+            }
         },
 
     };
