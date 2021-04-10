@@ -107,7 +107,7 @@ fn handle_client(c:&mut std::net::TcpStream,addr:std::net::SocketAddr)
                 Ok(mut ff) => {
                     std::io::Read::read_to_string(&mut ff,&mut uri_data).unwrap();
 
-                    let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
+                    let response=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
                     std::io::Write::write(c,
                                           response
                                           .as_bytes()).unwrap();
