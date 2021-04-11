@@ -1,6 +1,7 @@
-all: rshttpd
-rshttpd: main.rs
-	rustc $^ -o $@
+all: src/rshttpd
+src/rshttpd: src/main.rs src/handle_client.rs
+	rustc $< -o $@
 	@strip $@
+	@ln -s src/rshttpd ./rshttpd
 clean:
-	$(RM) rshttpd
+	$(RM) src/rshttpd
