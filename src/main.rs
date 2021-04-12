@@ -16,9 +16,9 @@ fn main()
         hostname=argv[1].as_str();
     }
 
-    let s=match std::net::TcpListener::bind(format!("{}{}",hostname,":80"))
+    let server=match std::net::TcpListener::bind(format!("{}{}",hostname,":80"))
     {
-        Ok(ss) => ss,
+        Ok(s) => s,
         Err(_) => {
             print!("error: failed to bind to IP address {}\n",hostname);
             std::process::exit(1);
@@ -28,7 +28,7 @@ fn main()
     let mut threads:std::vec::Vec<std::thread::JoinHandle<()>>=vec!();
     loop
     {
-        threads.push(match s.accept()
+        threads.push(match server.accept()
         {
             Ok((mut sock,addr)) =>std::thread::spawn(move||{handle_client::handle_client(&mut sock,addr)}),
             Err(_e) => {
