@@ -6,13 +6,22 @@ SRCDIR=..
 
 main()
 {
-	mkdir -p "$PKGNAME/DEBIAN"
-	mkdir -p "$PKGNAME/$PREFIX"
+	case "$1" in
+		clean)
+			rm -rf "$PKGNAME" "$PKGNAME.deb"
+			exit
+			;;
 
-	cp "$SRCDIR/$PKGNAME" "$PKGNAME/$PREFIX/"
-	cp "control" "$PKGNAME/DEBIAN/"
+		*)
+			mkdir -p "$PKGNAME/DEBIAN"
+			mkdir -p "$PKGNAME/$PREFIX"
 
-	dpkg-deb --build "$PKGNAME"
+			cp "$SRCDIR/$PKGNAME" "$PKGNAME/$PREFIX/"
+			cp "control" "$PKGNAME/DEBIAN/"
+
+			dpkg-deb --build "$PKGNAME"
+			;;
+	esac
 }
 
-main
+main $*
