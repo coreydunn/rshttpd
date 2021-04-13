@@ -1,0 +1,25 @@
+pkgname=rshttpd
+pkgver=0.2
+pkgrel=1
+pkgdesc="Web (HTTP) server"
+arch=("any")
+url="https://github.com/coreydunn/rshttpd"
+license=('GPL2')
+depends=()
+source=("git://github.com/coreydunn/${pkgname}/")
+sha1sums=('SKIP')
+
+build() {
+    cd "$pkgname"
+	make
+}
+
+package() {
+    cd "$pkgname"
+
+    mkdir -p $pkgdir/usr/local/bin
+    mkdir -p $pkgdir/etc
+
+	cp src/rshttpd $pkgdir/usr/local/bin/
+	cp pkg/rshttpd.conf $pkgdir/etc/
+}
