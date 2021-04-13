@@ -1,4 +1,53 @@
-pub fn handle_client(root:String,client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr)
+pub struct Config
+{
+    pub working_dir:String,
+    pub log_dir:String,
+}
+
+impl Config
+{
+    pub fn new() -> Config
+    {
+        Config {
+            working_dir:"/srv/http".to_string(),
+            log_dir:"/var/rshttpd.log".to_string(),
+        }
+    }
+
+    pub fn open(path:&str) -> Config
+    {
+        let mut conf=Config::new();
+        let file=std::fs::File::open(path);
+
+        match file
+        {
+            // Read file
+            Ok(mut f) => {
+                let mut working_dir:String="".to_string();
+                std::io::Read::read_to_string(&mut f,&mut working_dir).unwrap();
+                conf.working_dir=working_dir.trim().to_string();
+                conf
+            },
+
+            Err(_) => {
+                print!("warning: failed to open config file '{}', using default settings\n",
+                       path);
+                conf
+            }
+        }
+    }
+
+    pub fn print(&self)
+    {
+        print!("working_dir: '{}'\n",self.working_dir);
+    }
+
+    pub fn open_log(&self)
+    {
+    }
+}
+
+pub fn handle_client(conf:Config,client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr)
 {
     print!("Connected to client at {:?}\n",addr);
     //let mut v:Vec<u8>=vec!();
@@ -94,7 +143,7 @@ pub fn handle_client(root:String,client_sock:&mut std::net::TcpStream,addr:std::
 
         // GET URI AND SEND
         let mut uri_data="".to_string();
-        let effective_uri=format!("{}/{}",root,uri.as_str());
+        let effective_uri=format!("{}/{}",conf.working_dir,uri.as_str());
         match std::fs::File::open(&effective_uri)
         {
             Ok(mut f) => {

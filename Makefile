@@ -1,5 +1,5 @@
 all: src/rshttpd
-src/rshttpd: src/main.rs src/handle_client.rs
+src/rshttpd: src/main.rs src/connection.rs
 	rustc $< -o $@
 	@strip $@
 	@[ -e rshttpd ] || ln -s $@ ./rshttpd

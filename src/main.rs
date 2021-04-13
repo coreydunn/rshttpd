@@ -1,9 +1,11 @@
-mod handle_client;
+mod connection;
+
 fn main()
 {
-    let hostname:&str;
     let argv:Vec<String>=std::env::args().collect();
-    let mut root:String="/srv/http".to_string();
+    let configfile:String="/etc/rshttpd.conf".to_string();
+    let hostname:&str;
+    let mut conf=connection::Config::new();
 
     // Parse arguments
     if argv.len()<2
@@ -17,6 +19,11 @@ fn main()
         hostname=argv[1].as_str();
     }
 
+    // Read config file
+    conf=connection::Config::open(&configfile);
+    conf.print();
+
+    // Start TCP server
     let server=match std::net::TcpListener::bind(format!("{}{}",hostname,":80"))
     {
         Ok(s) => s,
@@ -29,10 +36,16 @@ fn main()
     let mut threads:std::vec::Vec<std::thread::JoinHandle<()>>=vec!();
     loop
     {
-        let rcl=root.clone();
+        //let rcl=conf.working_dir.clone();
         threads.push(match server.accept()
         {
-            Ok((mut sock,addr)) =>std::thread::spawn(move||{handle_client::handle_client(rcl,&mut sock,addr)}),
+            Ok((mut sock,addr)) =>{
+                let c:connection::Config=connection::Config{
+                    working_dir:conf.working_dir.clone(),
+                    log_dir:conf.log_dir.clone(),
+                };
+                std::thread::spawn(move||{connection::handle_client(c,&mut sock,addr)})
+            },
             Err(_e) => {
                 print!("error: failed to get client\n");
                 std::thread::spawn(||{/*nothing*/})
