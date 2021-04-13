@@ -3,6 +3,7 @@ fn main()
 {
     let hostname:&str;
     let argv:Vec<String>=std::env::args().collect();
+    let mut root:String="/srv/http".to_string();
 
     // Parse arguments
     if argv.len()<2
@@ -28,9 +29,10 @@ fn main()
     let mut threads:std::vec::Vec<std::thread::JoinHandle<()>>=vec!();
     loop
     {
+        let rcl=root.clone();
         threads.push(match server.accept()
         {
-            Ok((mut sock,addr)) =>std::thread::spawn(move||{handle_client::handle_client(&mut sock,addr)}),
+            Ok((mut sock,addr)) =>std::thread::spawn(move||{handle_client::handle_client(rcl,&mut sock,addr)}),
             Err(_e) => {
                 print!("error: failed to get client\n");
                 std::thread::spawn(||{/*nothing*/})

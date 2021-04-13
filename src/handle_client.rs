@@ -1,4 +1,4 @@
-pub fn handle_client(client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr)
+pub fn handle_client(root:String,client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr)
 {
     print!("Connected to client at {:?}\n",addr);
     //let mut v:Vec<u8>=vec!();
@@ -94,7 +94,8 @@ pub fn handle_client(client_sock:&mut std::net::TcpStream,addr:std::net::SocketA
 
         // GET URI AND SEND
         let mut uri_data="".to_string();
-        match std::fs::File::open(uri.as_str())
+        let effective_uri=format!("{}/{}",root,uri.as_str());
+        match std::fs::File::open(&effective_uri)
         {
             Ok(mut f) => {
                 std::io::Read::read_to_string(&mut f,&mut uri_data).unwrap();
@@ -105,7 +106,7 @@ pub fn handle_client(client_sock:&mut std::net::TcpStream,addr:std::net::SocketA
                     print!("Disconnected from client ({:?})\n",addr);
                     break 'connection;
                 }
-                print!("200 OK: {:?}\t=>\t[peer: {}]\n",uri.as_str(),addr);
+                print!("200 OK: {:?}\t=>\t[peer: {}]\n",effective_uri.as_str(),addr);
             },
 
             // Failed to load URI -- present 404 page
