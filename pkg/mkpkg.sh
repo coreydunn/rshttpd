@@ -2,6 +2,7 @@
 
 PKGNAME=rshttpd
 PREFIX=usr/local/bin
+CONFDIR=etc
 SRCDIR=..
 
 main()
@@ -15,9 +16,11 @@ main()
 		*)
 			mkdir -p "$PKGNAME/DEBIAN"
 			mkdir -p "$PKGNAME/$PREFIX"
+			mkdir -p "$PKGNAME/$CONFDIR"
 
 			cp "$SRCDIR/$PKGNAME" "$PKGNAME/$PREFIX/"
 			cp "control" "$PKGNAME/DEBIAN/"
+			cp "rshttpd.conf" "$PKGNAME/$CONFDIR/"
 
 			dpkg-deb --build "$PKGNAME"
 			;;
