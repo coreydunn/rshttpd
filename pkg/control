@@ -1,0 +1,9 @@
+Package: rshttpd
+Version: 0.1
+Section: custom
+Priority: optional
+Architecture: amd64
+Essential: no
+Installed-Size: 1024
+Maintainer: coreydunn.us
+Description: Web (HTTP) server
