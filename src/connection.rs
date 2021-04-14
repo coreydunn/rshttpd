@@ -142,19 +142,28 @@ pub fn handle_client(conf:Config,client_sock:&mut std::net::TcpStream,addr:std::
         print!("GET: {:?}\t<=\t[peer: {}]\n",uri.as_str(),addr);
 
         // GET URI AND SEND
-        let mut uri_data="".to_string();
+        //let mut uri_data="".to_string();
+        let mut uri_data:Vec<u8>=vec![];
         let effective_uri=format!("{}/{}",conf.working_dir,uri.as_str());
         match std::fs::File::open(&effective_uri)
         {
             Ok(mut f) => {
-                std::io::Read::read_to_string(&mut f,&mut uri_data).unwrap();
+                std::io::Read::read_to_end(&mut f,&mut uri_data).unwrap();
 
-                let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
-                if ! write_sock(client_sock,response.as_str())
+                //let response=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
+                let header=format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",uri_data.len());
+                let mut response:Vec<u8>=vec![];
+
+                //std::vec::Vec::append(&mut response,&mut header);
+                std::vec::Vec::append(&mut response,&mut header.as_bytes().to_vec());
+                std::vec::Vec::append(&mut response,&mut uri_data.to_vec());
+
+                if ! write_sock(client_sock,&response)
                 {
                     print!("Disconnected from client ({:?})\n",addr);
                     break 'connection;
                 }
+
                 print!("200 OK: {:?}\t=>\t[peer: {}]\n",effective_uri.as_str(),addr);
             },
 
@@ -179,11 +188,9 @@ pub fn handle_client(conf:Config,client_sock:&mut std::net::TcpStream,addr:std::
     }
 }
 
-fn write_sock(client_sock:&mut std::net::TcpStream,response:&str) -> bool
+fn write_sock(client_sock:&mut std::net::TcpStream,response:&Vec<u8>) -> bool
 {
-    match std::io::Write::write(client_sock,
-                                response
-                                .as_bytes())
+    match std::io::Write::write(client_sock,response)
     {
         Ok(__) => true,
         Err(__) => {
@@ -232,16 +239,20 @@ pub fn safe_uri(path:&str) -> bool
 // Return false if message failed to send
 fn send_404(client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr) -> bool
 {
-    let mut uri_data="".to_string();
+    let mut uri_data:Vec<u8>=vec![];
 
     match std::fs::File::open("404.html")
     {
         // Display /404.html page
         Ok(mut file) => {
-            std::io::Read::read_to_string(&mut file,&mut uri_data).unwrap();
+            std::io::Read::read_to_end(&mut file,&mut uri_data).unwrap();
 
-            let response=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
-            if ! write_sock(client_sock,response.as_str())
+            let mut response:Vec<u8>=vec![];
+            let header=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n",uri_data.len());
+            std::vec::Vec::append(&mut response,&mut header.as_bytes().to_vec());
+            std::vec::Vec::append(&mut response,&mut uri_data.to_vec());
+
+            if ! write_sock(client_sock,&response)
             {
                 print!("Disconnected from client ({:?})\n",addr);
                 //break 'connection;
@@ -251,10 +262,13 @@ fn send_404(client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr) -> b
 
         // Otherwise display minimal built-in 404 message
         Err(_) => {
-            uri_data="<html>404 Error: Not Found</html>".to_string();
-            let response=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n{}",uri_data.len(),uri_data);
+            let uri_data="<html>404 Error: Not Found</html>".as_bytes();
+            let mut response:Vec<u8>=vec![];
+            let header=format!("HTTP/1.1 404 Not Found\r\nContent-Length: {}\r\n\r\n",uri_data.len());
+            std::vec::Vec::append(&mut response,&mut header.as_bytes().to_vec());
+            std::vec::Vec::append(&mut response,&mut uri_data.to_vec());
 
-            if ! write_sock(client_sock,response.as_str())
+            if ! write_sock(client_sock,&response)
             {
                 print!("Disconnected from client ({:?})\n",addr);
                 //break 'connection;

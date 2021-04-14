@@ -1,2 +1,0 @@
-Read URIs as binary files to allow non-UTF-8 documents to be
-read properly (e.g., image files)
