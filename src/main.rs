@@ -5,7 +5,8 @@ fn main()
     let argv:Vec<String>=std::env::args().collect();
     let configfile:String="/etc/rshttpd.conf".to_string();
     let hostname:&str;
-    let mut conf=connection::Config::new();
+    //let mut conf=connection::Config::new();
+    let conf:connection::Config;
 
     // Parse arguments
     if argv.len()<2
@@ -44,7 +45,7 @@ fn main()
                     working_dir:conf.working_dir.clone(),
                     log_dir:conf.log_dir.clone(),
                 };
-                std::thread::spawn(move||{connection::handle_client(c,&mut sock,addr)})
+                std::thread::spawn(move||{connection::handle_client_thread(c,&mut sock,addr)})
             },
             Err(_e) => {
                 print!("error: failed to get client\n");

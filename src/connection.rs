@@ -42,21 +42,37 @@ impl Config
         print!("working_dir: '{}'\n",self.working_dir);
     }
 
-    pub fn open_log(&self)
-    {
-    }
+    //pub fn open_log(&self)
+    //{
+    //}
 }
 
-pub fn handle_client(conf:Config,client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr)
+pub fn handle_client_thread(conf:Config,client_sock:&mut std::net::TcpStream,addr:std::net::SocketAddr)
 {
     print!("Connected to client at {:?}\n",addr);
     //let mut v:Vec<u8>=vec!();
+    let thread_start_time=std::time::SystemTime::now();
+    let timeout=300u64; // 5 minutes timeout
+
+    // Get elapsed time
+    fn get_elapsed_time(start_time:&std::time::SystemTime) -> u64
+    {
+        std::time::SystemTime::elapsed(start_time).unwrap().as_millis() as u64
+    }
 
     // Handle HTTP requests
     'connection: loop
     {
         let mut request:String="".to_string();
         let mut sock_buffer:[u8;10]=[0,0,0,0,0,0,0,0,0,0];
+
+        // Close after timeout
+        if get_elapsed_time(&thread_start_time)>=timeout
+        {
+            std::net::TcpStream::shutdown(&client_sock,std::net::Shutdown::Both).unwrap();
+            print!("timeout!\n");
+            return;
+        }
 
         // Read single request
         'read_output: while std::io::Read::read(client_sock,&mut sock_buffer).unwrap() > 0
