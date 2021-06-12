@@ -3,7 +3,7 @@ src/rshttpd: src/main.rs src/connection.rs
 	rustc $< -o $@
 	@strip $@
 	@[ -e rshttpd ] || ln -s $@ ./rshttpd
-pkg: pkg/rshttpd.deb rshttpd.1.gz
+pkg: rshttpd.1.gz pkg/rshttpd.deb
 pkg/rshttpd.deb: src/rshttpd
 	cd pkg && ./mkpkg.sh
 %.gz: %
