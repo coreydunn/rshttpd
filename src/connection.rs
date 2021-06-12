@@ -70,7 +70,8 @@ pub fn handle_client_thread(conf:Config,client_sock:&mut std::net::TcpStream,add
         if get_elapsed_time(&thread_start_time)>=timeout
         {
             std::net::TcpStream::shutdown(&client_sock,std::net::Shutdown::Both).unwrap();
-            print!("timeout!\n");
+            //print!("timeout!\n");
+            print!("Timeout: \t\t[peer: {}]\n",addr);
             return;
         }
 
